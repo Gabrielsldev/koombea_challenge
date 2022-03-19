@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Your Files</h1>
+<ul>
+{% for file in csvfile_list %}
+    <li>{{ file }}</li>
+{% empty %}
+    <li>No articles yet.</li>
+{% endfor %}
+</ul>
+
+  <p><a href="{% url 'index' %}">Return to home</a></p>
+{% endblock %}
