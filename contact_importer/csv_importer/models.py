@@ -13,6 +13,7 @@ User = get_user_model()
 
 class Contact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
+
     name = models.CharField(max_length=255, blank=False, null=True)
     date_of_birth = models.DateField(blank=False, null=True)
     phone = models.CharField(max_length=30, blank=False, null=True)
@@ -21,6 +22,7 @@ class Contact(models.Model):
     last_four_card_numbers = models.CharField(max_length=20, blank=False, null=True)
     franchise = models.CharField(max_length=20, blank=False, null=True)
     email = models.EmailField(blank=False, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -6,6 +6,7 @@
     <thead>
       <tr>
         <th scope="col">File Name</th>
+        <th scope="col">Status</th>
         <th scope="col">Action</th>
       </tr>
     </thead>
@@ -13,7 +14,19 @@
     {% for file in csvfile_list %}
       <tr>
         <td>{{ file.name }}</td>
+        {% if file.on_hold %}
+        <td>On Hold</td>
         <td><a href="{% url 'process' file.id %}">Process File</a></td>
+        {% elif file.processing %}
+        <td>Processing</td>
+        <td>File processing</td>
+        {% elif file.failed %}
+        <td>Faild</td>
+        <td><a href="{% url 'process' file.id %}">Try Process File Again</a></td>
+        {% elif file.finished %}
+        <td>Finished</td>
+        <td>Processed</td>
+        {% endif %}
       </tr>
     {% empty %}
       <tr>

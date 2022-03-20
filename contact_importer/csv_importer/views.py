@@ -26,6 +26,7 @@ class IndexView(TemplateView):
     template_name = "index.html"
 
 
+# View to upload a file
 @login_required
 def file_upload(request):
     if request.method == 'POST':
@@ -34,6 +35,7 @@ def file_upload(request):
             new_csv_file = csvFile(file = request.FILES['file'])
             new_csv_file.user = request.user
             new_csv_file.name = request.POST['name']
+            new_csv_file.on_hold = True
             new_csv_file.save()
             return redirect('files')
     else:
@@ -47,6 +49,7 @@ def file_upload(request):
     return render(request, 'upload_page.html', context)
 
 
+# View to list all files per user
 class ListFiles(ListView, LoginRequiredMixin):
     model = csvFile
     paginate_by = 10
@@ -70,6 +73,10 @@ def process_file(request, pk):
 
 
     if request.method == 'POST':
+        # Changes status of file to processing
+        file.on_hold = False
+        file.processing = True
+        file.save()
         for index, row in df.iterrows():
             user  = request.user
             logger.warning(f"Saving data from CSV to DataBase. File: {file} at {datetime.datetime.now()} | User: {user}")
@@ -104,7 +111,14 @@ def process_file(request, pk):
                 return (sum(r[0::2]) + sum(sum(divmod(d*2,10)) for d in r[1::2])) % 10 == 0
             # Gets credit card number
             credit_card = row[request.POST["credit_card"]]
-            if luhn(credit_card):
+            if credit_card == '':
+                credit_card = None
+                logger.warning(f'Contact credit card is not in a valid format: {row[request.POST["credit_card"]]}.')
+                franchise = None
+                logger.warning(f'Contact credit card franchise is not valid.')
+                last_four_card_numbers = None
+                logger.warning(f'Contact credit card is not in a valid format.')
+            elif luhn(credit_card):
                 # Checks BIN number to know which is the card franchise using binlist API (10 requests/min for free)
                 six_first_digits = credit_card[:6]
                 url = f"https://lookup.binlist.net/{six_first_digits}"
@@ -131,11 +145,30 @@ def process_file(request, pk):
             else:
                 logger.warning(f'Contact email is not in a valid format: {row[request.POST["email"]]}.')
                 email = None
+                
             # Saves to database
-            new_ativo_instance = Contact.objects.create(user=user, name=name, date_of_birth=date_of_birth, phone=phone,
-                                                        address=address, credit_card=credit_card, franchise=franchise,
-                                                        last_four_card_numbers=last_four_card_numbers, email=email)
-            new_ativo_instance.save()
+            if (name==None and 
+                date_of_birth==None and 
+                phone==None and
+                address==None and 
+                credit_card==None and 
+                franchise==None and
+                last_four_card_numbers==None and 
+                email==None):
+                
+                file.processing = False
+                file.failed = True
+                file.save()
+                logger.warning(f'Contact not saved. File failed.')
+            else:
+                new_ativo_instance = Contact.objects.create(user=user, name=name, date_of_birth=date_of_birth, phone=phone,
+                                                            address=address, credit_card=credit_card, franchise=franchise,
+                                                            last_four_card_numbers=last_four_card_numbers, email=email)
+                new_ativo_instance.save()
+                file.processing = False
+                file.failed = False
+                file.finished = True
+                file.save()
 
         return HttpResponseRedirect(reverse('contact'))
 
@@ -147,6 +180,7 @@ def process_file(request, pk):
     return render(request, 'process_file.html', context)
 
 
+# View to list all contacts per user
 class ListContacts(ListView, LoginRequiredMixin):
     model = Contact
     paginate_by = 10
