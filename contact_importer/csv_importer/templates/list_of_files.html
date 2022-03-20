@@ -12,7 +12,7 @@
     <tbody>
     {% for file in csvfile_list %}
       <tr>
-        <td>{{ file }}</td>
+        <td>{{ file.name }}</td>
         <td><a href="{% url 'process' file.id %}">Process File</a></td>
       </tr>
     {% empty %}

@@ -7,6 +7,7 @@ from csv_importer.models import Contact, csvFile
 from django.shortcuts import get_object_or_404
 
 import datetime
+import re
 
 import pandas as pd
 
@@ -39,15 +40,28 @@ def process_file(request, pk):
     file = get_object_or_404(csvFile, pk=pk)
 
 
-    df = pd.read_csv("../contact_importer/media/csvfiles/2022/03/contacts_test.csv")
+    df = pd.read_csv(f"../contact_importer/media/{file.file}")
+    df["date_of_birth"] = pd.to_datetime(df['date_of_birth'], format='%Y-%m-%d', errors='coerce')
     options = list(df.columns)
     
 
     if request.method == 'POST':
         for index, row in df.iterrows():
-            name = row[request.POST["name"]]
-            date_of_birth = row[request.POST["date_of_birth"]]
-            phone = row[request.POST["phone"]]
+            if re.match("^[a-zA-Z -]*$", row[request.POST["name"]]):
+                name = row[request.POST["name"]]
+            else:
+                name = None
+
+            if isinstance(row[request.POST["date_of_birth"]], pd._libs.tslibs.timestamps.Timestamp):
+                date_of_birth = row[request.POST["date_of_birth"]]
+            else:
+                date_of_birth = None
+
+            if re.match("\(\+[0-9][0-9]\)[ ][0-9]{3}[ ][0-9]{3}[ ][0-9]{2}[ ][0-9]{2}[ ][0-9]{2}$|\(\+[0-9]{2}\)[ ][0-9]{3}[-][0-9]{3}[-][0-9]{2}[-][0-9]{2}[-][0-9]{2}$", row[request.POST["phone"]]):
+                phone = row[request.POST["phone"]]
+            else:
+                phone = None
+                
             address = row[request.POST["address"]]
             credit_card = row[request.POST["credit_card"]]
             franchise = row[request.POST["franchise"]]

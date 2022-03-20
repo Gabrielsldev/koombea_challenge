@@ -4,9 +4,9 @@ from django.db import models
 
 
 class Contact(models.Model):
-    name = models.CharField(max_length=255, blank=False, null=False)
+    name = models.CharField(max_length=255, blank=False, null=True)
     date_of_birth = models.DateField(blank=False, null=True)
-    phone = models.CharField(max_length=30, blank=False, null=False)
+    phone = models.CharField(max_length=30, blank=False, null=True)
     address = models.CharField(max_length=255, blank=False, null=False)
     credit_card = models.CharField(max_length=20, blank=False, null=False)
     franchise = models.CharField(max_length=50, blank=False, null=False)
