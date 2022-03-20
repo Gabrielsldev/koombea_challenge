@@ -64,11 +64,8 @@ class ListFiles(ListView, LoginRequiredMixin):
 def process_file(request, pk):
     file = get_object_or_404(csvFile, pk=pk)
 
-    # Read and clean some fields of the CSV file
+    # Read CSV file
     df = pd.read_csv(f"../contact_importer/media/{file.file}")
-    df["date_of_birth"] = pd.to_datetime(df['date_of_birth'], format='%Y-%m-%d', errors='coerce')
-    df['credit_card'] = df['credit_card'].str.replace(r'\D+', '')
-    df['email_validation'] = df['email'].apply(validate_email)
     options = list(df.columns)
 
 
@@ -77,6 +74,12 @@ def process_file(request, pk):
         file.on_hold = False
         file.processing = True
         file.save()
+        
+        # Clean some fields of the CSV file with the choosen columns
+        df[request.POST["date_of_birth"]] = pd.to_datetime(df[request.POST["date_of_birth"]], format='%Y-%m-%d', errors='coerce')
+        df[request.POST["credit_card"]] = df[request.POST["credit_card"]].str.replace(r'\D+', '')
+        df['email_validation'] = df[request.POST["email"]].apply(validate_email)
+
         for index, row in df.iterrows():
             user  = request.user
             logger.warning(f"Saving data from CSV to DataBase. File: {file} at {datetime.datetime.now()} | User: {user}")
@@ -140,8 +143,15 @@ def process_file(request, pk):
             if row['email_validation'] == True:
                 email = row[request.POST["email"]]
                 if Contact.objects.filter(user=request.user,email=email).exists():
-                    email = None
-                    logger.warning(f'Contact email already exists')
+                    name=None
+                    date_of_birth=None 
+                    phone=None
+                    address=None 
+                    credit_card=None 
+                    franchise=None
+                    last_four_card_numbers=None
+                    email=None
+                    logger.warning(f'Contact email already exists. Contact not saved.')
             else:
                 logger.warning(f'Contact email is not in a valid format: {row[request.POST["email"]]}.')
                 email = None
