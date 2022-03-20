@@ -7,12 +7,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from csv_importer.models import Contact, csvFile
 from django.shortcuts import get_object_or_404
+import logging
 
 import datetime
 import re
 import requests
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -118,24 +121,18 @@ def process_file(request, pk):
                                                         last_four_card_numbers=last_four_card_numbers, email=email)
             new_ativo_instance.save()
 
-
-
-
-        # name = request.POST["name"]
-        # date_of_birth = request.POST["date_of_birth"]
-        # phone = request.POST["phone"]
-        # address = request.POST["address"]
-        # credit_card = request.POST["credit_card"]
-        # franchise = request.POST["franchise"]
-        # email = request.POST["email"]
-
-        # new_ativo_instance = Contact.objects.create(name=name, date_of_birth=date_of_birth, phone=phone,
-        #                                             address=address, credit_card=credit_card, franchise=franchise, email=email)
-        # new_ativo_instance.save()
-
     context = {
         'file': file,
         'options': options,
     }
 
     return render(request, 'process_file.html', context)
+
+
+class ListContacts(ListView, LoginRequiredMixin):
+    model = Contact
+    paginate_by = 10
+    template_name = "list_of_contacts.html"
+
+    def get_queryset(self):
+        return Contact.objects.filter(user=self.request.user)

@@ -9,6 +9,8 @@ class ContactAdmin(admin.ModelAdmin):
     model = Contact
     list_display = ('user', 'created_at',)
     list_filter = ('user', 'created_at',)
+    exclude = ('credit_card',)
+
 
 admin.site.register(Contact, ContactAdmin)
 
