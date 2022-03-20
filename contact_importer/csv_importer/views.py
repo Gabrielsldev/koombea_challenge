@@ -16,6 +16,7 @@ import re
 import requests
 
 import pandas as pd
+from validate_email import validate_email
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,7 @@ def process_file(request, pk):
     df = pd.read_csv(f"../contact_importer/media/{file.file}")
     df["date_of_birth"] = pd.to_datetime(df['date_of_birth'], format='%Y-%m-%d', errors='coerce')
     df['credit_card'] = df['credit_card'].str.replace(r'\D+', '')
+    df['email_validation'] = df['email'].apply(validate_email)
     options = list(df.columns)
 
 
@@ -121,17 +123,21 @@ def process_file(request, pk):
                 last_four_card_numbers = None
                 logger.warning(f'Contact credit card is not in a valid format.')
             # Validade email
-            email = row[request.POST["email"]]
-            if Contact.objects.filter(user=request.user,email=email).exists():
+            if row['email_validation'] == True:
+                email = row[request.POST["email"]]
+                if Contact.objects.filter(user=request.user,email=email).exists():
+                    email = None
+                    logger.warning(f'Contact email already exists')
+            else:
+                logger.warning(f'Contact email is not in a valid format: {row[request.POST["email"]]}.')
                 email = None
-                logger.warning(f'Contact email already exists')
             # Saves to database
             new_ativo_instance = Contact.objects.create(user=user, name=name, date_of_birth=date_of_birth, phone=phone,
                                                         address=address, credit_card=credit_card, franchise=franchise,
                                                         last_four_card_numbers=last_four_card_numbers, email=email)
             new_ativo_instance.save()
 
-            return HttpResponseRedirect(reverse('contact'))
+        return HttpResponseRedirect(reverse('contact'))
 
     context = {
         'file': file,
