@@ -23,6 +23,9 @@ class Contact(models.Model):
     email = models.EmailField(blank=False, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-id']
+
 
 class csvFile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)

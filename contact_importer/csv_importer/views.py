@@ -1,5 +1,7 @@
 import http
 from http.client import HTTPResponse
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.views.generic import TemplateView, ListView
 from .forms import csvFileForm
 from django.shortcuts import render, redirect
@@ -68,27 +70,31 @@ def process_file(request, pk):
     if request.method == 'POST':
         for index, row in df.iterrows():
             user  = request.user
-            
+            logger.warning(f"Saving data from CSV to DataBase. File: {file} at {datetime.datetime.now()} | User: {user}")
             # Validate name
             if re.match("^[a-zA-Z -]*$", row[request.POST["name"]]):
                 name = row[request.POST["name"]]
             else:
                 name = None
+                logger.warning(f'Contact name is not in a valid format: {row[request.POST["name"]]}.')
             # Validade date of birth
             if isinstance(row[request.POST["date_of_birth"]], pd._libs.tslibs.timestamps.Timestamp):
                 date_of_birth = row[request.POST["date_of_birth"]]
             else:
                 date_of_birth = None
+                logger.warning(f'Contact date of birth is not in a valid format: {row[request.POST["date_of_birth"]]}.')
             # Validade phone
             if re.match("\(\+[0-9][0-9]\)[ ][0-9]{3}[ ][0-9]{3}[ ][0-9]{2}[ ][0-9]{2}[ ][0-9]{2}$|\(\+[0-9]{2}\)[ ][0-9]{3}[-][0-9]{3}[-][0-9]{2}[-][0-9]{2}[-][0-9]{2}$", row[request.POST["phone"]]):
                 phone = row[request.POST["phone"]]
             else:
                 phone = None
+                logger.warning(f'Contact phone number is not in a valid format: {row[request.POST["phone"]]}.')
             # Validate address            
             if (pd.notnull(row[request.POST["address"]]) and row[request.POST["address"]] != ''):
                 address = row[request.POST["address"]]
             else:
                 address = None
+                logger.warning(f'Contact adress is not in a valid format: {row[request.POST["address"]]}.')
             # Validade and encrypt card and set franchise
             # Checks if card number is valid without the need to send card number over the internet via an API
             def luhn(n): # Luhn algorithm to validade card number
@@ -109,17 +115,23 @@ def process_file(request, pk):
                     last_four_card_numbers = 'XXXX XXXX XXXX '+ credit_card[-4:]
             else:
                 credit_card = None
+                logger.warning(f'Contact credit card is not in a valid format: {row[request.POST["credit_card"]]}.')
                 franchise = None
+                logger.warning(f'Contact credit card franchise is not valid.')
                 last_four_card_numbers = None
+                logger.warning(f'Contact credit card is not in a valid format.')
             # Validade email
             email = row[request.POST["email"]]
             if Contact.objects.filter(user=request.user,email=email).exists():
                 email = None
-
+                logger.warning(f'Contact email already exists')
+            # Saves to database
             new_ativo_instance = Contact.objects.create(user=user, name=name, date_of_birth=date_of_birth, phone=phone,
                                                         address=address, credit_card=credit_card, franchise=franchise,
                                                         last_four_card_numbers=last_four_card_numbers, email=email)
             new_ativo_instance.save()
+
+            return HttpResponseRedirect(reverse('contact'))
 
     context = {
         'file': file,
