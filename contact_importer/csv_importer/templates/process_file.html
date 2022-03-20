@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="fields">Set column relation:</label>
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Date of Birth</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Address</th>
+            <th scope="col">Credit Card</th>
+            <th scope="col">Franchise</th>
+            <th scope="col">Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+                <select name="name" id="name">
+                    {% for option in options %}
+                    <option value={{option}}>{{option}}</option>
+                    {% endfor %}
+                </select> 
+            </td>
+            <td>
+                <select name="date_of_birth" id="date_of_birth">
+                    {% for option in options %}
+                    <option value="{{option}}">{{option}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="phone" id="phone">
+                    {% for option in options %}
+                    <option value="{{option}}">{{option}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="address" id="address">
+                    {% for option in options %}
+                    <option value="{{option}}">{{option}}</option>
+                    {% endfor %}
+                </select> 
+            </td>
+            <td>
+                <select name="credit_card" id="credit_card">
+                    {% for option in options %}
+                    <option value="{{option}}">{{option}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="franchise" id="franchise">
+                    {% for option in options %}
+                    <option value="{{option}}">{{option}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="email" id="email">
+                    {% for option in options %}
+                    <option value={{option}}>{{option}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    <button type="submit">Process</button>
+  </form>
+  {{ file }}
+  <p><a href="{% url 'index' %}">Return to home</a></p>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
