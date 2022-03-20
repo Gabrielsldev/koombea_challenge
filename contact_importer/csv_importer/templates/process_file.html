@@ -13,7 +13,6 @@
             <th scope="col">Phone</th>
             <th scope="col">Address</th>
             <th scope="col">Credit Card</th>
-            <th scope="col">Franchise</th>
             <th scope="col">Email</th>
           </tr>
         </thead>
@@ -49,13 +48,6 @@
             </td>
             <td>
                 <select name="credit_card" id="credit_card">
-                    {% for option in options %}
-                    <option value="{{option}}">{{option}}</option>
-                    {% endfor %}
-                </select>
-            </td>
-            <td>
-                <select name="franchise" id="franchise">
                     {% for option in options %}
                     <option value="{{option}}">{{option}}</option>
                     {% endfor %}
