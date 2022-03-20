@@ -18,21 +18,34 @@ class IndexView(TemplateView):
 
 
 @login_required
-def model_form_upload(request):
+def file_upload(request):
     if request.method == 'POST':
         form = csvFileForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            new_csv_file = csvFile(file = request.FILES['file'])
+            new_csv_file.user = request.user
+            new_csv_file.name = request.POST['name']
+            new_csv_file.save()
             return redirect('files')
     else:
         form = csvFileForm()
-    return render(request, 'upload_page.html',{'form': form})
+    
+    context = {
+        'form': form,
+        # 'user': user
+        }
+
+    return render(request, 'upload_page.html', context)
 
 
 class ListFiles(ListView, LoginRequiredMixin):
     model = csvFile
     paginate_by = 10
     template_name = "list_of_files.html"
+
+    def get_queryset(self):
+        return csvFile.objects.filter(user=self.request.user)
+
 
 
 @login_required
@@ -61,10 +74,17 @@ def process_file(request, pk):
                 phone = row[request.POST["phone"]]
             else:
                 phone = None
-                
-            address = row[request.POST["address"]]
+            
+            if (pd.notnull(row[request.POST["address"]]) and row[request.POST["address"]] != ''):
+                address = row[request.POST["address"]]
+            else:
+                address = None
+
+            # contacts = Contact.objects.all()
             credit_card = row[request.POST["credit_card"]]
             franchise = row[request.POST["franchise"]]
+
+
             email = row[request.POST["email"]]
 
             new_ativo_instance = Contact.objects.create(name=name, date_of_birth=date_of_birth, phone=phone,
