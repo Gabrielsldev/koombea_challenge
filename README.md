@@ -70,6 +70,8 @@ The application is pretty **straight forward**.
 >
 > - This means that fields where data was not validated will show up as `None` in the contact list page.
 > - If need be, the application can be changed to save only records that have all fields validated.
+7. The **log file** `contact_importer.log` can be found at `koombea_challenge/contact_importer/contact_importer.log`
+
 ### The sample CSV files for testing can be found at `koombea_challenge/csf_files`
 - There are 4 CSV files to test different use cases: repeated emails, non-complying, empty or missing fields, different column names, some edge cases.
 ---
