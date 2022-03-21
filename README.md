@@ -28,6 +28,7 @@ The information display to the user needs to follow the pattern bellow:
 ### The application was done with **Django**.
 - **Pandas** was used to handle the CSV files and the validations, along side with some **regular expressions**.
 - Python's **Requests** was used to access the [Binlist API](https://binlist.net/) to find out the credit card's franchise.
+  - The free version only accepts 10 requests per minute, so I kept the CSV files short for test purposes.
 - The library **validate-email** was used for e-mail validation and **django-cryptography** for encrypting credit cards numbers.
 ---
 
@@ -55,9 +56,9 @@ The information display to the user needs to follow the pattern bellow:
 > As instructed, **login will be done with e-mail**, not username, but the username is also asked for registration.
 7. Run the application with `python manage.py runserver`
 ---
-# Application
+# Application Usage
 
-The application is pretty straight forward.
+The application is pretty **straight forward**.
 
 1. The user can **sign in** with the superuser just created or **sign up with a new user.**
 2. The user can use the **navbar** to navigate.
@@ -65,6 +66,16 @@ The application is pretty straight forward.
 4. Next the **list of uploaded files** will appear with the **status** of each file.
 5. The user can click on the link to **process the file** and **select which column in the CSV file correspond to the column in the database table**.
 6. After processing the file, a list of all the imported contacts will show up.
-> **IMPORTANT:** The instructions weren't very clear whether I should save the contact in the database only if **all** the fields were validated. Thus, **I choose to save them if at least one field is validated so we don't loose all the data. The non-validated fields were saved as `null`.**
+> **IMPORTANT:** The instructions weren't very clear whether I should save the record in the database only if **all** the fields were validated. Thus, **I choose to save them if at least one field is validated so we don't loose all the data. The non-validated fields were saved as `null`.**
+>
+> - This means that fields where data was not validated will show up as `None` in the contact list page.
+> - If need be, the application can be changed to save only records that have all fields validated.
+### The sample CSV files for testing can be found at `koombea_challenge/csf_files`
+- There are 4 CSV files to test different use cases: repeated emails, non-complying, empty or missing fields, different column names, some edge cases.
+---
+# Future improvements
 
-
+- I think that future improvements should include unit tests, which are very important. It's a gap I'll fill in future developments.
+- Processing CSV files in a background job can also be implemented with libraries like Celery. I'm not too familiar on how to implement this feature, which is a gap I'll work on.
+---
+### Developed by Gabriel Sobreira Lopes
