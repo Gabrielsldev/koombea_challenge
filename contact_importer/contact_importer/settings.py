@@ -146,7 +146,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'csv_importer.views': {
+        'csv_importer.utils.validation_rules': {
             'handlers': ['file'],
             'level': 'WARNING',
             'propagate': True,
